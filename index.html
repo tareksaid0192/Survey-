@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b3f94">
+<title>استبيان التعامل مع سلوكيات الطفل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2a1f45;--p:#5b3f94;--pd:#47307a;--bg:#f6f3fb;--line:#e3dcf0;--t:#2fa896;--tl:#e3f5f1;--mut:#6f6590;--err:#c0392b}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{font-family:'Cairo','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 18px)}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.track{flex:1;height:8px;background:var(--line);border-radius:8px;overflow:hidden}
+.fill{height:100%;background:var(--t);border-radius:8px;transition:width .3s}
+.count{font-size:14px;color:var(--mut);font-weight:600;min-width:44px;text-align:left}
+main{flex:1;outline:none}
+h1{font-size:28px;font-weight:800;line-height:1.5;color:var(--pd)}
+h2{font-size:22px;font-weight:800;line-height:1.55;margin-bottom:6px;outline:none}
+.hint{color:var(--mut);font-size:15px;margin-bottom:18px}
+.intro{padding-top:8vh}
+.intro p{color:var(--mut);font-size:17px;margin:14px 0 26px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px}
+.chips span{background:#fff;border:1px solid var(--line);border-radius:20px;padding:4px 14px;font-size:14px;color:var(--pd);font-weight:600}
+.opts{display:grid;gap:10px;margin-top:18px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:start;font:inherit;font-size:17px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt .mk{flex:none;width:22px;height:22px;border:2px solid #c9bfe0;border-radius:50%;display:grid;place-items:center;transition:all .15s}
+.multi .opt .mk{border-radius:7px}
+.opt .mk::after{content:"";width:10px;height:10px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .15s}
+.multi .opt .mk::after{border-radius:3px}
+.opt.on{border-color:var(--t);background:var(--tl)}
+.opt.on .mk{background:var(--t);border-color:var(--t)}
+.opt.on .mk::after{transform:scale(1)}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:22px}
+.sc{font:inherit;font-size:22px;font-weight:800;color:var(--pd);background:#fff;border:1.5px solid var(--line);border-radius:16px;aspect-ratio:1/1.15;cursor:pointer;transition:all .15s}
+.sc.on{background:var(--t);border-color:var(--t);color:#fff}
+.ends{display:flex;justify-content:space-between;margin-top:10px;font-size:14px;color:var(--mut);font-weight:600}
+textarea{width:100%;min-height:140px;margin-top:18px;font:inherit;font-size:17px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px;resize:vertical}
+textarea:focus{border-color:var(--t);outline:none}
+.nav{display:flex;gap:10px;padding-top:22px}
+.btn{font:inherit;font-size:17px;font-weight:800;border-radius:14px;border:0;padding:14px 22px;cursor:pointer}
+.pri{flex:1;background:var(--p);color:#fff}
+.pri:disabled{background:#cfc6e3;cursor:not-allowed}
+.gh{background:transparent;color:var(--pd);border:1.5px solid var(--line)}
+.err{color:var(--err);font-size:15px;font-weight:600;margin-top:14px}
+.done{text-align:center;padding-top:14vh}
+.done .ok{width:84px;height:84px;margin:0 auto 22px;border-radius:50%;background:var(--t);display:grid;place-items:center}
+.done p{color:var(--mut);font-size:17px;margin-top:12px}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top" id="top" hidden><div class="track"><div class="fill" id="fill"></div></div><div class="count" id="count"></div></div>
+  <main id="app" tabindex="-1"></main>
+</div>
+<script>
+var URL_='https://xhwisjtwavbuqgfubfig.supabase.co/rest/v1/survey_responses';
+var KEY='sb_publishable_WF-pVzN4zBtLvZmDJriAeQ_YGSUz92p';
+
+var Q=[
+{k:'q1',t:'عمرك كام؟',type:'single',o:['أقل من 25','25–35','36–45','أكتر من 45']},
+{k:'q2',t:'عمر أصغر أطفالك؟',type:'single',o:['أقل من سنة','1–3 سنين','4–6 سنين','7–12 سنة','أكبر من 12 سنة']},
+{k:'q3',t:'إيه السلوكيات اللي بتواجهيها مع طفلك؟',hint:'اختاري أكتر من إجابة',type:'multi',o:['الصراخ ونوبات الغضب','العند ورفض الأوامر','رمي الأشياء أو الضرب','عدم الاستجابة لما أكلمه','رفض الأكل','رفض النوم أو الاستيقاظ بالليل','الكذب أو التخريب','الإفراط في استخدام الموبايل','غير ذلك']},
+{k:'q4',t:'المواقف دي بتتكرر كل قد إيه؟',type:'single',o:['يومياً','كذا مرة في الأسبوع','نادراً']},
+{k:'q5',t:'بتحسي بقد إيه من الضغط والإرهاق وقت الموقف؟',type:'scale',lo:'مرتاحة',hi:'مرهقة جداً'},
+{k:'q6',t:'بتتصرفي إزاي غالباً؟',type:'single',o:['بهدّيه','بصرخ','بسيبه','بعاقبه','بشتّت انتباهه','مش عارفة أتصرف']},
+{k:'q7',t:'بتاخدي الإرشاد منين؟',hint:'اختاري أكتر من إجابة',type:'multi',o:['الأهل والأصحاب','السوشيال ميديا','دكتور أو أخصائي','كتب ومقالات','مفيش مصدر']},
+{k:'q8',t:'المعلومات اللي بتلاقيها كافية وواضحة؟',type:'single',o:['نعم','جزئياً','لا']},
+{k:'q9',t:'قد إيه نفسك في إرشاد سريع في نفس لحظة الموقف؟',type:'scale',lo:'مش محتاجة',hi:'محتاجة جداً'},
+{k:'q10',t:'لو فيه تطبيق عربي بيشرح خطوات عملية لكل سلوك، هتستخدميه؟',type:'single',o:['أكيد','ممكن','لا']},
+{k:'q11',t:'تفضلي الإرشاد إزاي؟',type:'single',o:['صوت','نص','الاتنين']},
+{k:'q12',t:'إيه أهم المميزات عندك؟',hint:'اختاري أكتر من إجابة',type:'multi',o:['إرشادات صوتية','خطوات مختصرة','تواصل مع أخصائية','حفظ المفضلة','البحث عن مشكلة']},
+{k:'q13',t:'عندك اقتراح تحبي نضيفه؟',hint:'اختياري',type:'text',opt:true}
+];
+
+var i=-1, ans={}, busy=false;
+var app=document.getElementById('app'), top_=document.getElementById('top');
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function has(q){var a=ans[q.k];if(q.opt)return true;return q.type==='multi'?(a&&a.length>0):(a!==undefined&&a!=='')}
+
+function render(){
+  if(i<0){
+    top_.hidden=true;
+    app.innerHTML='<section class="intro"><h1>استبيان التعامل مع سلوكيات الطفل</h1><p>دقيقتين بس. إجاباتك سرية وبتتستخدم في مشروع تخرج لتطبيق بيساعد الأمهات في المواقف اليومية مع أطفالهم.</p><div class="chips"><span>13 سؤال</span><span>دقيقتين</span><span>سري</span></div><div class="nav"><button class="btn pri" id="start">ابدأ الاستبيان</button></div></section>';
+    return;
+  }
+  if(i>=Q.length){
+    top_.hidden=true;
+    app.innerHTML='<section class="done"><div class="ok"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h1>شكراً لوقتك</h1><p>إجاباتك اتسجلت، وهتساعدنا نطوّر التطبيق ليناسب احتياجات الأمهات.</p></section>';
+    return;
+  }
+  var q=Q[i], a=ans[q.k], body='';
+  top_.hidden=false;
+  document.getElementById('fill').style.width=((i+1)/Q.length*100)+'%';
+  document.getElementById('count').textContent=(i+1)+' / '+Q.length;
+  if(q.type==='single'||q.type==='multi'){
+    body='<div class="opts '+q.type+'">'+q.o.map(function(o,n){
+      var on=q.type==='multi'?(a&&a.indexOf(o)>-1):a===o;
+      return '<button class="opt'+(on?' on':'')+'" data-v="'+n+'"><span class="mk"></span><span>'+esc(o)+'</span></button>';
+    }).join('')+'</div>';
+  }else if(q.type==='scale'){
+    body='<div class="scale">'+[1,2,3,4,5].map(function(n){return '<button class="sc'+(a===n?' on':'')+'" data-v="'+n+'">'+n+'</button>'}).join('')+'</div><div class="ends"><span>'+esc(q.lo)+'</span><span>'+esc(q.hi)+'</span></div>';
+  }else{
+    body='<textarea id="tx" placeholder="اكتبي هنا…">'+esc(a||'')+'</textarea>';
+  }
+  var last=i===Q.length-1;
+  var showNext=q.type==='multi'||q.type==='text';
+  app.innerHTML='<section><h2 id="qt" tabindex="-1">'+esc(q.t)+'</h2>'+(q.hint?'<div class="hint">'+esc(q.hint)+'</div>':'')+body+'<div class="err" id="err" role="alert"></div><div class="nav">'+(i>0?'<button class="btn gh" id="back">رجوع</button>':'')+(showNext?'<button class="btn pri" id="next"'+(has(q)?'':' disabled')+'>'+(last?'إرسال':'التالي')+'</button>':'')+'</div></section>';
+  var h=document.getElementById('qt'); if(h)h.focus({preventScroll:true});
+  window.scrollTo(0,0);
+}
+
+function next(){
+  var q=Q[i];
+  if(q.type==='text'){var t=document.getElementById('tx');ans[q.k]=t?t.value.trim():''}
+  if(!has(q))return;
+  if(i===Q.length-1){submit();return}
+  i++;render();
+}
+
+async function submit(){
+  if(busy)return; busy=true;
+  var btn=document.getElementById('next'); if(btn){btn.disabled=true;btn.textContent='جاري الإرسال…'}
+  var out={};
+  Q.forEach(function(q){var a=ans[q.k]; if(a===undefined||a===''||(Array.isArray(a)&&!a.length))a=null; out[q.k]={q:q.t,a:a}});
+  try{
+    var r=await fetch(URL_,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({answers:out})});
+    if(!r.ok)throw new Error(r.status);
+    i=Q.length;render();
+  }catch(e){
+    busy=false;
+    var er=document.getElementById('err'); if(er)er.textContent='الإجابات ماتبعتتش. اتأكدي من النت واضغطي إرسال تاني.';
+    if(btn){btn.disabled=false;btn.textContent='إرسال'}
+  }
+}
+
+app.addEventListener('click',function(e){
+  var el=e.target.closest('button'); if(!el)return;
+  if(el.id==='start'){i=0;render();return}
+  if(el.id==='back'){var q0=Q[i];if(q0.type==='text'){var t=document.getElementById('tx');if(t)ans[q0.k]=t.value.trim()}i--;render();return}
+  if(el.id==='next'){next();return}
+  var q=Q[i], v=el.getAttribute('data-v');
+  if(v===null)return;
+  if(q.type==='multi'){
+    var val=q.o[+v], a=ans[q.k]||[], p=a.indexOf(val);
+    if(p>-1)a.splice(p,1);else a.push(val);
+    ans[q.k]=a; el.classList.toggle('on');
+    document.getElementById('next').disabled=!has(q);
+  }else{
+    ans[q.k]=q.type==='scale'?+v:q.o[+v];
+    Array.prototype.forEach.call(app.querySelectorAll('.opt,.sc'),function(b){b.classList.toggle('on',b===el)});
+    setTimeout(function(){i++;render()},220);
+  }
+});
+render();
+</script>
+</body>
+</html>
